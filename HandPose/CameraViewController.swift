@@ -42,10 +42,10 @@ class CameraViewController: UIViewController {
             self?.handleGestureStateChange(state: state)
         }
         // Add double tap gesture recognizer for clearing the draw path.
-        let recognizer = UITapGestureRecognizer(target: self, action: #selector(handleGesture(_:)))
-        recognizer.numberOfTouchesRequired = 1
-        recognizer.numberOfTapsRequired = 2
-        view.addGestureRecognizer(recognizer)
+//        let recognizer = UITapGestureRecognizer(target: self, action: #selector(handleGesture(_:)))
+//        recognizer.numberOfTouchesRequired = 1
+//        recognizer.numberOfTapsRequired = 2
+//        view.addGestureRecognizer(recognizer)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -185,17 +185,17 @@ class CameraViewController: UIViewController {
             lastDrawPoint = drawPoint
         }
         // Update the path on the overlay layer.
-        drawOverlay.path = drawPath.cgPath
+//        drawOverlay.path = drawPath.cgPath
     }
     
-    @IBAction func handleGesture(_ gesture: UITapGestureRecognizer) {
-        guard gesture.state == .ended else {
-            return
-        }
-        evidenceBuffer.removeAll()
-        drawPath.removeAllPoints()
-        drawOverlay.path = drawPath.cgPath
-    }
+//    @IBAction func handleGesture(_ gesture: UITapGestureRecognizer) {
+//        guard gesture.state == .ended else {
+//            return
+//        }
+//        evidenceBuffer.removeAll()
+//        drawPath.removeAllPoints()
+//        drawOverlay.path = drawPath.cgPath
+//    }
 }
 
 extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
