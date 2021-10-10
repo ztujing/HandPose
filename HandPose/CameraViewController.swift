@@ -15,8 +15,10 @@ class CameraViewController: UIViewController {
     
     private let videoDataOutputQueue = DispatchQueue(label: "CameraFeedDataOutput", qos: .userInteractive)
     private var cameraFeedSession: AVCaptureSession?
-    private var handPoseRequest = VNDetectHumanHandPoseRequest()
-    
+
+    private var bodyPoseRequest = VNDetectHumanBodyPoseRequest()
+
+
     private let drawOverlay = CAShapeLayer()
     private let drawPath = UIBezierPath()
     private var evidenceBuffer = [HandGestureProcessor.PointsPair]()
@@ -36,7 +38,8 @@ class CameraViewController: UIViewController {
         drawOverlay.lineCap = .round
         view.layer.addSublayer(drawOverlay)
         // This sample app detects one hand only.
-        handPoseRequest.maximumHandCount = 1
+//        handPoseRequest.maximumHandCount = 1
+        
         // Add state change handler to hand gesture processor.
         gestureProcessor.didChangeStateClosure = { [weak self] state in
             self?.handleGestureStateChange(state: state)
@@ -99,7 +102,7 @@ class CameraViewController: UIViewController {
         }
         session.commitConfiguration()
         cameraFeedSession = session
-}
+    }
     
     func processPoints(thumbTip: CGPoint?, indexTip: CGPoint?) {
         // Check that we have both points.
@@ -200,38 +203,38 @@ class CameraViewController: UIViewController {
 
 extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        var thumbTip: CGPoint?
-        var indexTip: CGPoint?
+        var noseTip: CGPoint?
+       
         
-        defer {
-            DispatchQueue.main.sync {
-                self.processPoints(thumbTip: thumbTip, indexTip: indexTip)
-            }
-        }
+//        defer {
+//            DispatchQueue.main.sync {
+//                self.processPoints(thumbTip: thumbTip, indexTip: indexTip)
+//            }
+//        }
 
         let handler = VNImageRequestHandler(cmSampleBuffer: sampleBuffer, orientation: .up, options: [:])
         do {
             // Perform VNDetectHumanHandPoseRequest
-            try handler.perform([handPoseRequest])
+            try handler.perform([bodyPoseRequest])
             // Continue only when a hand was detected in the frame.
             // Since we set the maximumHandCount property of the request to 1, there will be at most one observation.
-            guard let observation = handPoseRequest.results?.first else {
+            guard let observation = bodyPoseRequest.results?.first else {
                 return
             }
             // Get points for thumb and index finger.
-            let thumbPoints = try observation.recognizedPoints(.thumb)
-            let indexFingerPoints = try observation.recognizedPoints(.indexFinger)
+            let bodyPoints = try observation.recognizedPoints(.all)
+        
             // Look for tip points.
-            guard let thumbTipPoint = thumbPoints[.thumbTip], let indexTipPoint = indexFingerPoints[.indexTip] else {
+            guard let nosePoint =  bodyPoints[.nose]  else {
                 return
             }
             // Ignore low confidence points.
-            guard thumbTipPoint.confidence > 0.3 && indexTipPoint.confidence > 0.3 else {
+            guard nosePoint.confidence > 0.3 else {
                 return
             }
             // Convert points from Vision coordinates to AVFoundation coordinates.
-            thumbTip = CGPoint(x: thumbTipPoint.location.x, y: 1 - thumbTipPoint.location.y)
-            indexTip = CGPoint(x: indexTipPoint.location.x, y: 1 - indexTipPoint.location.y)
+            noseTip = CGPoint(x: nosePoint.location.x, y: 1 - nosePoint.location.y)
+            print(noseTip)
         } catch {
             cameraFeedSession?.stopRunning()
             let error = AppError.visionError(error: error)
