@@ -47,7 +47,7 @@ class CameraView: UIView {
         pointsPath.removeAllPoints()
         for point in points {
             pointsPath.move(to: point)
-            pointsPath.addArc(withCenter: point, radius: 5, startAngle: 0, endAngle: 2 * .pi, clockwise: true)
+            pointsPath.addArc(withCenter: point, radius: 20, startAngle: 0, endAngle: 2 * .pi, clockwise: true)
         }
         overlayLayer.fillColor = color.cgColor
         CATransaction.begin()

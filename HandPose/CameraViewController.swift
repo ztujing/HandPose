@@ -203,8 +203,13 @@ class CameraViewController: UIViewController {
 
 extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        var noseTip: CGPoint?
-       
+        
+        // 画面の大きさ
+           let width = UIScreen.main.bounds.size.width
+           print("screen width : \(width)")
+           let height = UIScreen.main.bounds.size.height
+           print("screen height : \(height)")
+        
         
 //        defer {
 //            DispatchQueue.main.sync {
@@ -222,19 +227,24 @@ extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
                 return
             }
             // Get points for thumb and index finger.
-            let bodyPoints = try observation.recognizedPoints(.all)
-        
-            // Look for tip points.
-            guard let nosePoint =  bodyPoints[.nose]  else {
-                return
-            }
-            // Ignore low confidence points.
-            guard nosePoint.confidence > 0.3 else {
-                return
-            }
-            // Convert points from Vision coordinates to AVFoundation coordinates.
-            noseTip = CGPoint(x: nosePoint.location.x, y: 1 - nosePoint.location.y)
-            print(noseTip)
+            //let bodyPoints = try observation.recognizedPoints(.all)
+            
+    
+            guard let recognizedPoints =
+                        try? observation.recognizedPoints(forGroupKey: .all) else {
+                    return
+                }
+
+                let imagePoints: [CGPoint] = recognizedPoints.values.compactMap {
+                    guard $0.confidence > 0 else { return nil}
+                    return VNImagePointForNormalizedPoint($0.location, Int(width), Int(height))
+                }
+
+
+            print(imagePoints)
+            
+           
+            
         } catch {
             cameraFeedSession?.stopRunning()
             let error = AppError.visionError(error: error)
